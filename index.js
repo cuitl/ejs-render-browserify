@@ -1,23 +1,18 @@
 var ejs = require('ejs')
-  , through = require('through')
+var through = require('through')
 
-module.exports = function(file, options) {
-  if (!/\.ejs$/.test(file)) return through()
+module.exports = function (file, data, options) {
+    if (!/\.js|\.ejs$/.test(file)) return through()
 
-  options = options || {}
+    data = data || {}
+    options = options || {}
 
-  var buffer = ""
+    var buffer = ""
 
-  return through(function write(chunk) {
-    buffer += chunk
-  }, function end() {
-    var template = ejs.compile(buffer, {
-        client: true
-      , compileDebug: options.debug || false
-      , filename: file
+    return through(function write(chunk) {
+        buffer += chunk
+    }, function end() {
+        this.queue(ejs.render(buffer, data, options));
+        this.queue(null);
     })
-
-    this.queue('module.exports = (' + template + ')')
-    this.queue(null)
-  })
 }
